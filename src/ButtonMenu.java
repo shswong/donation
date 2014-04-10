@@ -11,20 +11,26 @@ public class ButtonMenu extends JPanel implements ActionListener {
 	public ButtonMenu() {
 		buttonCount = 0;
 		setLayout(null);
-		printButton("Hello World!");
-		printButton("Hello World2!");
+		printButton("Donations");
+		printButton("Member List");
 		printButton("Hello World3!");
 	}
 
-	public void printButton(String text) {
+	public void printButton(final String text) {
 		buttonCount += 1;
-		JButton button = new JButton(text);
+		JButton button = new JButton(new AbstractAction(text) {
+			public void actionPerformed(ActionEvent e) {
+				String window = text;
+				JOptionPane.showMessageDialog(null, text);
+				new JFrame(text).setVisible(true);
+			}
+		});
 		button.addActionListener(this);
 		button.setBounds(824, 8 + (buttonCount * 30), 150, 25);
 		add(button);
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		JOptionPane.showMessageDialog(null, "" + buttonCount);
+
 	}
 }
