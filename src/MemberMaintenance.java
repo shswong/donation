@@ -42,7 +42,8 @@ public class MemberMaintenance extends JPanel {
 		JButton test = new JButton(new AbstractAction("Test") {
 			public void actionPerformed(ActionEvent e) {
 				// button to test input functions
-				initializeTextFields();
+				// textFieldArray.get(6).setText(processPhoneNumber("77889792223334444"));
+				textFieldArray.get(6).setText(processPhoneNumber("abc456268519191"));
 			}
 		});
 
@@ -82,6 +83,45 @@ public class MemberMaintenance extends JPanel {
 			textField.setText("");
 		}
 		textFieldArray.get(0).requestFocusInWindow();
+	}
+
+	// process phone numbers
+	private String processPhoneNumber(String number) {
+		// empty string case
+		if (number.isEmpty()) { return "(111) 000-0000"; }
+		// string less than 10 characters case
+		if (number.length() < 10) { number = String.format("%0$10s", number).replace(" ", "0"); }
+		String processedNumber = "";
+		ArrayList<Character> characters = new ArrayList<Character>();
+
+		// add only digits to characters array
+		for (Character character : number.toCharArray()) {
+			if (character.isDigit(character)) {
+				characters.add(character);
+			}
+		}
+
+		// check to allow only 10 digits
+		while (characters.size() > 10) {
+			characters.remove(0);
+		}
+
+		processedNumber += "(";
+		for (int i = 0; i < 3; i++) {
+			processedNumber += characters.get(i);
+		}
+		processedNumber += ") ";
+
+		for (int i = 3; i < 6; i++) {
+			processedNumber += characters.get(i);
+		}
+		processedNumber += "-";
+
+		for (int i = 6; i < 10; i++) {
+			processedNumber += characters.get(i);
+		}
+
+		return processedNumber;
 	}
 	////////////////////////////////////////////////////////////////////////////////
 
@@ -125,6 +165,10 @@ public class MemberMaintenance extends JPanel {
 		textFieldCount += 1;
 		textField.setBounds(104, 8 + (textFieldCount * 30), 150, 20);
 		add(textField);
+	}
+	////////////////////////////////////////////////////////////////////////////////
+	private void log(String s) {
+		System.out.println(s);
 	}
 	////////////////////////////////////////////////////////////////////////////////
 }
