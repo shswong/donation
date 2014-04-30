@@ -1,5 +1,6 @@
 import javax.swing.*;
 
+import java.sql.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -42,8 +43,8 @@ public class MemberMaintenance extends JPanel {
 		JButton test = new JButton(new AbstractAction("Test") {
 			public void actionPerformed(ActionEvent e) {
 				// button to test input functions
-				// textFieldArray.get(6).setText(processPhoneNumber("77889792223334444"));
-				textFieldArray.get(6).setText(processPhoneNumber("abc456268519191"));
+				// textFieldArray.get(6).setText(processPhoneNumber("abc456268519191"));
+				sql();
 			}
 		});
 
@@ -171,4 +172,18 @@ public class MemberMaintenance extends JPanel {
 		System.out.println(s);
 	}
 	////////////////////////////////////////////////////////////////////////////////
+
+	private void sql() {
+		String url = "jdbc:odbc:donation";
+		String query = "SELECT * FROM Member";
+
+		try {
+			Class.forName("sun.jdbc.odbc.JdbcOdbcDriver");
+			Connection con = DriverManager.getConnection(url, "myLogin", "myPassword");
+			Statement stmt = con.createStatement();
+			ResultSet rs = stmt.executeQuery(query);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }
