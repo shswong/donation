@@ -17,6 +17,9 @@ public class MemberMaintenance extends JPanel {
 	private int textFieldCount;
 	private ArrayList<JLabel> labelArray;
 	private ArrayList<JFormattedTextField> textFieldArray;
+	private Connection con;
+	private Statement stmt;
+	private ResultSet rs;
 
 	public MemberMaintenance() {
 		buttonCount = 0;
@@ -25,6 +28,8 @@ public class MemberMaintenance extends JPanel {
 		setLayout(null);
 		labelArray = new ArrayList<JLabel>();
 		textFieldArray = new ArrayList<JFormattedTextField>();
+
+		initializeSQL();
 
 		labelArray.add(new JLabel("Last Name:"));
 		labelArray.add(new JLabel("First Name:"));
@@ -44,7 +49,7 @@ public class MemberMaintenance extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				// button to test input functions
 				// textFieldArray.get(6).setText(processPhoneNumber("abc456268519191"));
-				sql();
+
 			}
 		});
 
@@ -71,6 +76,7 @@ public class MemberMaintenance extends JPanel {
 		});
 
 		printElements();
+		printMemberTable();
 		printButton(test);
 		printButton(saveMember);
 		printButton(addMember);
@@ -167,23 +173,33 @@ public class MemberMaintenance extends JPanel {
 		textField.setBounds(104, 8 + (textFieldCount * 30), 150, 20);
 		add(textField);
 	}
+
+	private void printMemberTable() {
+		final JTable table = new JTable(100, 10);
+		JScrollPane scrollPane = new JScrollPane(table);
+		scrollPane.setBounds(10, 321, 602, 236);
+		add(scrollPane);
+	}
 	////////////////////////////////////////////////////////////////////////////////
 	private void log(String s) {
 		System.out.println(s);
 	}
 	////////////////////////////////////////////////////////////////////////////////
 
-	private void sql() {
+	////////////////////////////////////////////////////////////////////////////////
+	// sql methods
+	private void initializeSQL() {
 		String url = "jdbc:odbc:donation";
 		String query = "SELECT * FROM Member";
 
 		try {
 			Class.forName("sun.jdbc.odbc.JdbcOdbcDriver");
-			Connection con = DriverManager.getConnection(url, "myLogin", "myPassword");
-			Statement stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery(query);
+			con = DriverManager.getConnection(url, "myLogin", "myPassword");
+			stmt = con.createStatement();
+			rs = stmt.executeQuery(query);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
+	////////////////////////////////////////////////////////////////////////////////
 }
