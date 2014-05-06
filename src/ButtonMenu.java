@@ -73,7 +73,7 @@ public class ButtonMenu extends JPanel {
 		component.setOpaque(true);
 		frame.setContentPane(component);
 
-		frame.setPreferredSize(new Dimension(800, 600));
+		frame.setPreferredSize(new Dimension(1024, 600));
 		frame.pack();
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);

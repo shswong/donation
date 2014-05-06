@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.table.*;
 
 import java.sql.*;
 import java.awt.*;
@@ -20,6 +21,7 @@ public class MemberMaintenance extends JPanel {
 	private Connection con;
 	private Statement stmt;
 	private ResultSet rs;
+	private int rsCount;
 
 	public MemberMaintenance() {
 		buttonCount = 0;
@@ -94,10 +96,13 @@ public class MemberMaintenance extends JPanel {
 
 	// process phone numbers
 	private String processPhoneNumber(String number) {
+		// null string case
+		if (number == null) { return ""; }
 		// empty string case
-		if (number.isEmpty()) { return "(111) 000-0000"; }
+		if (number.isEmpty()) { return ""; }
 		// string less than 10 characters case
 		if (number.length() < 10) { number = String.format("%0$10s", number).replace(" ", "0"); }
+
 		String processedNumber = "";
 		ArrayList<Character> characters = new ArrayList<Character>();
 
@@ -158,7 +163,7 @@ public class MemberMaintenance extends JPanel {
 
 	private void printButton(JButton button) {
 		buttonCount += 1;
-		button.setBounds(624, 308 + (buttonCount * 50), 150, 40);
+		button.setBounds(624, 8 + (buttonCount * 50), 150, 40);
 		add(button);
 	}
 
@@ -175,9 +180,52 @@ public class MemberMaintenance extends JPanel {
 	}
 
 	private void printMemberTable() {
-		final JTable table = new JTable(100, 10);
+		// Object[][] data = {
+		// 		{"Kathy", "Smith",
+		// 		 "Snowboarding", 5, 12, "", "", "", "", ""}
+		// };
+		int row = 0;
+		Object[][] data = new Object[400][10];
+		try {
+			while (rs.next()) {
+				data[row][0] = rs.getString("Last_name");
+				data[row][1] = rs.getString("First_name");
+				data[row][2] = rs.getString("Address");
+				data[row][3] = rs.getString("City");
+				data[row][4] = rs.getString("State");
+				data[row][5] = rs.getString("Zip");
+				data[row][6] = rs.getString("Home Phone");
+				data[row][7] = rs.getString("Cell Phone");
+				data[row][8] = rs.getString("Fax");
+				data[row][9] = "";
+				row++;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		String[] columnNames = {"Last Name",
+														"First Name",
+														"Address",
+														"City",
+														"State",
+														"Zip",
+														"Home Phone",
+														"Cell Phone",
+														"Fax",
+														""};
+
+		DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
+			public boolean isCellEditable(int row, int column) {
+				//all cells false
+				return false;
+			}
+		};
+
+		final JTable table = new JTable();
+		table.setModel(tableModel);
 		JScrollPane scrollPane = new JScrollPane(table);
-		scrollPane.setBounds(10, 321, 602, 236);
+		scrollPane.setBounds(10, 321, 980, 236);
 		add(scrollPane);
 	}
 	////////////////////////////////////////////////////////////////////////////////
@@ -197,7 +245,12 @@ public class MemberMaintenance extends JPanel {
 			con = DriverManager.getConnection(url, "myLogin", "myPassword");
 			stmt = con.createStatement();
 			rs = stmt.executeQuery(query);
+
+			// while (rs.next()) {
+			// 	rsCount++;
+			// }
 		} catch (Exception e) {
+			// later: display alert that sql could not be connected due to odbc
 			e.printStackTrace();
 		}
 	}
