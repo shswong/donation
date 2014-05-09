@@ -12,7 +12,7 @@ public class Donation {
 		donation.setOpaque(true);
 		frame.setContentPane(donation);
 
-		frame.setPreferredSize(new Dimension(1024, 768));
+		frame.setPreferredSize(new Dimension(800, 600));
 		frame.pack();
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);

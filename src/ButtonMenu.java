@@ -61,7 +61,7 @@ public class ButtonMenu extends JPanel {
 
 	private void printButton(JButton button) {
 		buttonCount += 1;
-		button.setBounds(624, 8 + (buttonCount * 50), 350, 40);
+		button.setBounds(424, 8 + (buttonCount * 50), 350, 40);
 		add(button);
 	}
 
@@ -73,7 +73,7 @@ public class ButtonMenu extends JPanel {
 		component.setOpaque(true);
 		frame.setContentPane(component);
 
-		frame.setPreferredSize(new Dimension(1024, 600));
+		frame.setPreferredSize(new Dimension(1152, 864));
 		frame.pack();
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);

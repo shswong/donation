@@ -5,6 +5,7 @@ import java.sql.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.*;
 
 /*
@@ -18,8 +19,6 @@ public class MemberMaintenance extends JPanel {
 	private int textFieldCount;
 	private ArrayList<JLabel> labelArray;
 	private ArrayList<JFormattedTextField> textFieldArray;
-	private Connection con;
-	private Statement stmt;
 	private ResultSet rs;
 	private int rsCount;
 
@@ -50,7 +49,7 @@ public class MemberMaintenance extends JPanel {
 		JButton test = new JButton(new AbstractAction("Test") {
 			public void actionPerformed(ActionEvent e) {
 				// button to test input functions
-				// textFieldArray.get(6).setText(processPhoneNumber("abc456268519191"));
+				textFieldArray.get(6).setText(processPhoneNumber("abc456268519191"));
 
 			}
 		});
@@ -163,31 +162,28 @@ public class MemberMaintenance extends JPanel {
 
 	private void printButton(JButton button) {
 		buttonCount += 1;
-		button.setBounds(624, 8 + (buttonCount * 50), 150, 40);
+		button.setBounds(8 + ((buttonCount - 1) * 200), 8, 150, 40);
 		add(button);
 	}
 
 	private void printLabel(JLabel label) {
 		labelCount += 1;
-		label.setBounds(24, 8 + (labelCount * 30), 100, 20);
+		label.setBounds(24, 80 + (labelCount * 30), 100, 20);
 		add(label);
 	}
 
 	private void printTextField(JFormattedTextField textField) {
 		textFieldCount += 1;
-		textField.setBounds(104, 8 + (textFieldCount * 30), 150, 20);
+		textField.setBounds(104, 80 + (textFieldCount * 30), 150, 20);
 		add(textField);
 	}
 
 	private void printMemberTable() {
-		// Object[][] data = {
-		// 		{"Kathy", "Smith",
-		// 		 "Snowboarding", 5, 12, "", "", "", "", ""}
-		// };
 		int row = 0;
-		Object[][] data = new Object[400][10];
+		Object[][] data = new Object[rsCount][10];
 		try {
 			while (rs.next()) {
+				int id = rs.getInt("ID");
 				data[row][0] = rs.getString("Last_name");
 				data[row][1] = rs.getString("First_name");
 				data[row][2] = rs.getString("Address");
@@ -197,7 +193,7 @@ public class MemberMaintenance extends JPanel {
 				data[row][6] = rs.getString("Home Phone");
 				data[row][7] = rs.getString("Cell Phone");
 				data[row][8] = rs.getString("Fax");
-				data[row][9] = "";
+				data[row][9] = "Load";
 				row++;
 			}
 		} catch (Exception e) {
@@ -217,15 +213,32 @@ public class MemberMaintenance extends JPanel {
 
 		DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
 			public boolean isCellEditable(int row, int column) {
-				//all cells false
-				return false;
+				switch (column) {
+					case 9:
+						return true;
+					default:
+						return false;
+				}
 			}
 		};
-
-		final JTable table = new JTable();
+		JTable table = new JTable();
 		table.setModel(tableModel);
+		table.setRowHeight(35);
+
+		Action load = new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				JTable table = (JTable)e.getSource();
+				int row = table.getSelectedRow();
+				for (int i = 0; i < 9; i++) {
+					textFieldArray.get(i).setText((String) table.getModel().getValueAt(row, i));
+				}
+			}
+		};
+		ButtonColumn buttonColumn = new ButtonColumn(table, load, 9);
+		buttonColumn.setMnemonic(KeyEvent.VK_D);
+
 		JScrollPane scrollPane = new JScrollPane(table);
-		scrollPane.setBounds(10, 321, 980, 236);
+		scrollPane.setBounds(10, 381, 1100, 444);
 		add(scrollPane);
 	}
 	////////////////////////////////////////////////////////////////////////////////
@@ -238,17 +251,18 @@ public class MemberMaintenance extends JPanel {
 	// sql methods
 	private void initializeSQL() {
 		String url = "jdbc:odbc:donation";
-		String query = "SELECT * FROM Member";
+		String query = "SELECT * FROM Member ORDER BY Last_name";
 
 		try {
 			Class.forName("sun.jdbc.odbc.JdbcOdbcDriver");
-			con = DriverManager.getConnection(url, "myLogin", "myPassword");
-			stmt = con.createStatement();
+			Connection con = DriverManager.getConnection(url, "myLogin", "myPassword");
+			Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 			rs = stmt.executeQuery(query);
 
-			// while (rs.next()) {
-			// 	rsCount++;
-			// }
+			while (rs.next()) {
+				rsCount++;
+			}
+			rs.first();
 		} catch (Exception e) {
 			// later: display alert that sql could not be connected due to odbc
 			e.printStackTrace();
