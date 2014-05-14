@@ -1,9 +1,9 @@
 donation
 ========
-member maintenance:
-maybe add hidden column to retrieve rowid?
-save member function
-add member function
-delete member function
-maybe a search function if possible?
-hopefully a help file
+member maintenance:<br>
+maybe add hidden column to retrieve rowid?<br>
+save member function<br>
+add member function<br>
+delete member function<br>
+maybe a search function if possible?<br>
+hopefully a help file<br>
