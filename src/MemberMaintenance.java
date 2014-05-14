@@ -19,6 +19,8 @@ public class MemberMaintenance extends JPanel {
 	private int textFieldCount;
 	private ArrayList<JLabel> labelArray;
 	private ArrayList<JFormattedTextField> textFieldArray;
+	private Connection con;
+	private Statement stmt;
 	private ResultSet rs;
 	private int rsCount;
 
@@ -42,7 +44,7 @@ public class MemberMaintenance extends JPanel {
 		labelArray.add(new JLabel("Cell Phone:"));
 		labelArray.add(new JLabel("Fax:"));
 
-		for (int counter = 0; counter < 9; counter++) {
+		for (int counter = 0; counter < labelArray.size(); counter++) {
 			textFieldArray.add(new JFormattedTextField());
 		}
 
@@ -180,7 +182,7 @@ public class MemberMaintenance extends JPanel {
 
 	private void printMemberTable() {
 		int row = 0;
-		Object[][] data = new Object[rsCount][10];
+		Object[][] data = new Object[rsCount][labelArray.size() + 1];
 		try {
 			while (rs.next()) {
 				int id = rs.getInt("ID");
@@ -229,8 +231,12 @@ public class MemberMaintenance extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				JTable table = (JTable)e.getSource();
 				int row = table.getSelectedRow();
-				for (int i = 0; i < 9; i++) {
-					textFieldArray.get(i).setText((String) table.getModel().getValueAt(row, i));
+				for (int i = 0; i < labelArray.size(); i++) {
+					if (i == 6 || i == 7 || i == 8) {
+						textFieldArray.get(i).setText(processPhoneNumber((String) table.getModel().getValueAt(row, i)));
+					} else {
+						textFieldArray.get(i).setText((String) table.getModel().getValueAt(row, i));
+					}
 				}
 			}
 		};
@@ -255,8 +261,8 @@ public class MemberMaintenance extends JPanel {
 
 		try {
 			Class.forName("sun.jdbc.odbc.JdbcOdbcDriver");
-			Connection con = DriverManager.getConnection(url, "myLogin", "myPassword");
-			Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			con = DriverManager.getConnection(url, "myLogin", "myPassword");
+			stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 			rs = stmt.executeQuery(query);
 
 			while (rs.next()) {
