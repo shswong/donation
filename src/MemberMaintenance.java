@@ -34,6 +34,7 @@ public class MemberMaintenance extends JPanel {
 
 		initializeSQL();
 
+		labelArray.add(new JLabel("ID:"));
 		labelArray.add(new JLabel("Last Name:"));
 		labelArray.add(new JLabel("First Name:"));
 		labelArray.add(new JLabel("Address:"));
@@ -141,15 +142,16 @@ public class MemberMaintenance extends JPanel {
 	////////////////////////////////////////////////////////////////////////////////
 	// set of methods to print elements to the frame
 	/*	position dictionary:
-	 *	0: last name
-	 *	1: first name
-	 *	2: address
-	 *	3: city
-	 *	4: state
-	 *	5: zip
-	 *	6: home phone
-	 *	7: cell phone
-	 *	8: fax#
+	 *	0: id
+	 *	1: last name
+	 *	2: first name
+	 *	3: address
+	 *	4: city
+	 *	5: state
+	 *	6: zip
+	 *	7: home phone
+	 *	8: cell phone
+	 *	9: fax#
 	 */
 
 	private void printElements() {
@@ -170,13 +172,16 @@ public class MemberMaintenance extends JPanel {
 
 	private void printLabel(JLabel label) {
 		labelCount += 1;
-		label.setBounds(24, 80 + (labelCount * 30), 100, 20);
+		label.setBounds(24, 40 + (labelCount * 30), 100, 20);
 		add(label);
 	}
 
 	private void printTextField(JFormattedTextField textField) {
 		textFieldCount += 1;
-		textField.setBounds(104, 80 + (textFieldCount * 30), 150, 20);
+		textField.setBounds(104, 40 + (textFieldCount * 30), 150, 20);
+		if (textFieldCount == 1) {
+			textField.setEditable(false);
+		}
 		add(textField);
 	}
 
@@ -186,23 +191,25 @@ public class MemberMaintenance extends JPanel {
 		try {
 			while (rs.next()) {
 				int id = rs.getInt("ID");
-				data[row][0] = rs.getString("Last_name");
-				data[row][1] = rs.getString("First_name");
-				data[row][2] = rs.getString("Address");
-				data[row][3] = rs.getString("City");
-				data[row][4] = rs.getString("State");
-				data[row][5] = rs.getString("Zip");
-				data[row][6] = rs.getString("Home Phone");
-				data[row][7] = rs.getString("Cell Phone");
-				data[row][8] = rs.getString("Fax");
-				data[row][9] = "Load";
+				data[row][0] = rs.getString("ID");
+				data[row][1] = rs.getString("Last_name");
+				data[row][2] = rs.getString("First_name");
+				data[row][3] = rs.getString("Address");
+				data[row][4] = rs.getString("City");
+				data[row][5] = rs.getString("State");
+				data[row][6] = rs.getString("Zip");
+				data[row][7] = processPhoneNumber(rs.getString("Home Phone"));
+				data[row][8] = processPhoneNumber(rs.getString("Cell Phone"));
+				data[row][9] = processPhoneNumber(rs.getString("Fax"));
+				data[row][10] = "Load";
 				row++;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		String[] columnNames = {"Last Name",
+		String[] columnNames = {"ID",
+														"Last Name",
 														"First Name",
 														"Address",
 														"City",
@@ -215,24 +222,24 @@ public class MemberMaintenance extends JPanel {
 
 		DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
 			public boolean isCellEditable(int row, int column) {
-				switch (column) {
-					case 9:
-						return true;
-					default:
-						return false;
-				}
+				// only need last column to be editable
+				return column == 10;
 			}
 		};
 		JTable table = new JTable();
 		table.setModel(tableModel);
 		table.setRowHeight(35);
+		table.getColumnModel().getColumn(0).setPreferredWidth(5);
+		table.getColumnModel().getColumn(5).setPreferredWidth(5);
+		table.getColumnModel().getColumn(6).setPreferredWidth(5);
+		table.getColumnModel().getColumn(10).setPreferredWidth(20);
 
 		Action load = new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				JTable table = (JTable)e.getSource();
 				int row = table.getSelectedRow();
 				for (int i = 0; i < labelArray.size(); i++) {
-					if (i == 6 || i == 7 || i == 8) {
+					if (i == 7 || i == 8 || i == 9) {
 						textFieldArray.get(i).setText(processPhoneNumber((String) table.getModel().getValueAt(row, i)));
 					} else {
 						textFieldArray.get(i).setText((String) table.getModel().getValueAt(row, i));
@@ -240,7 +247,7 @@ public class MemberMaintenance extends JPanel {
 				}
 			}
 		};
-		ButtonColumn buttonColumn = new ButtonColumn(table, load, 9);
+		ButtonColumn buttonColumn = new ButtonColumn(table, load, 10);
 		buttonColumn.setMnemonic(KeyEvent.VK_D);
 
 		JScrollPane scrollPane = new JScrollPane(table);
