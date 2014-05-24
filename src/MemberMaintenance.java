@@ -20,7 +20,6 @@ public class MemberMaintenance extends JPanel {
 	private ArrayList<JLabel> labelArray;
 	private ArrayList<JFormattedTextField> textFieldArray;
 	private Connection con;
-	private Statement stmt;
 	private ResultSet rs;
 	private int rsCount;
 
@@ -61,6 +60,14 @@ public class MemberMaintenance extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				// save changes function
 				// probably run update sql statement
+				String id = getTextData(0);
+				String lastname = getTextData(1);
+				String firstname = getTextData(2);
+
+				if (!(id.isEmpty())) {
+					String query = "UPDATE Member SET Last_name = '" + lastname + "', First_name = '" + firstname + "' WHERE ID = " + id;
+					executeCommand(query);
+				}
 			}
 		});
 
@@ -75,7 +82,13 @@ public class MemberMaintenance extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				// toggle frame to delete member functions
 				// should prompt confirm message and run delete sql statement upon confirm
-				initializeTextFields();
+				String id = getTextData(0);
+
+				if (!(id.isEmpty())) {
+					String query = "DELETE FROM Member WHERE ID = " + id;
+					executeCommand(query);
+					initializeTextFields();
+				}
 			}
 		});
 
@@ -136,6 +149,10 @@ public class MemberMaintenance extends JPanel {
 		}
 
 		return processedNumber;
+	}
+
+	private String getTextData(int pos) {
+		return textFieldArray.get(pos).getText();
 	}
 	////////////////////////////////////////////////////////////////////////////////
 
@@ -269,7 +286,8 @@ public class MemberMaintenance extends JPanel {
 		try {
 			Class.forName("sun.jdbc.odbc.JdbcOdbcDriver");
 			con = DriverManager.getConnection(url, "myLogin", "myPassword");
-			stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			con.setAutoCommit(true);
+			Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 			rs = stmt.executeQuery(query);
 
 			while (rs.next()) {
@@ -280,6 +298,22 @@ public class MemberMaintenance extends JPanel {
 			// later: display alert that sql could not be connected due to odbc
 			e.printStackTrace();
 		}
+	}
+
+	private void executeCommand(String query) {
+
+		try
+			{
+				Statement stmt = con.createStatement();
+				int change = stmt.executeUpdate(query);
+				// log(change + " " + query);
+				stmt.close();
+			}
+			catch (SQLException e)
+			{
+				System.out.println("*** SQL error encountered ***");
+			}
+
 	}
 	////////////////////////////////////////////////////////////////////////////////
 }
