@@ -20,7 +20,6 @@ public class MemberMaintenance extends JPanel {
 	private ArrayList<JLabel> labelArray;
 	private ArrayList<JFormattedTextField> textFieldArray;
 	private Connection con;
-	private ResultSet rs;
 	private int rsCount;
 
 	public MemberMaintenance() {
@@ -203,6 +202,20 @@ public class MemberMaintenance extends JPanel {
 	}
 
 	private void printMemberTable() {
+		ResultSet rs = null;
+		try {
+			String query = "SELECT * FROM Member ORDER BY Last_name";
+			Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			rs = stmt.executeQuery(query);
+
+			while (rs.next()) {
+				rsCount++;
+			}
+			rs.first();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 		int row = 0;
 		Object[][] data = new Object[rsCount][labelArray.size() + 1];
 		try {
@@ -279,41 +292,32 @@ public class MemberMaintenance extends JPanel {
 
 	////////////////////////////////////////////////////////////////////////////////
 	// sql methods
+	// set up the jdbc connection
 	private void initializeSQL() {
 		String url = "jdbc:odbc:donation";
-		String query = "SELECT * FROM Member ORDER BY Last_name";
 
 		try {
 			Class.forName("sun.jdbc.odbc.JdbcOdbcDriver");
 			con = DriverManager.getConnection(url, "myLogin", "myPassword");
 			con.setAutoCommit(true);
-			Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-			rs = stmt.executeQuery(query);
-
-			while (rs.next()) {
-				rsCount++;
-			}
-			rs.first();
 		} catch (Exception e) {
 			// later: display alert that sql could not be connected due to odbc
 			e.printStackTrace();
 		}
 	}
 
+	// method to execute update/delete/insert statements
 	private void executeCommand(String query) {
-
-		try
-			{
-				Statement stmt = con.createStatement();
-				int change = stmt.executeUpdate(query);
-				// log(change + " " + query);
-				stmt.close();
-			}
-			catch (SQLException e)
-			{
-				System.out.println("*** SQL error encountered ***");
-			}
-
+		try {
+			Statement stmt = con.createStatement();
+			int change = stmt.executeUpdate(query);
+			// log(change + " " + query);
+			stmt.close();
+			printMemberTable();
+		}
+		catch (SQLException e) {
+			System.out.println("*** SQL error encountered ***");
+		}
 	}
 	////////////////////////////////////////////////////////////////////////////////
 }
