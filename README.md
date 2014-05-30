@@ -1,6 +1,7 @@
 donation
 ========
 member maintenance:<br>
+maybe try manual updates to table<br>
 save member function<br>
 add member function<br>
 delete member function<br>
