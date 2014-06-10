@@ -21,6 +21,10 @@ public class MemberMaintenance extends JPanel {
 	private ArrayList<JFormattedTextField> textFieldArray;
 	private Connection con;
 	private int rsCount;
+	private String data[][];
+	private DefaultTableModel tableModel;
+	private JTable table;
+	private Hashtable<Integer, Integer> tableIndex = new Hashtable<Integer, Integer>();
 
 	public MemberMaintenance() {
 		buttonCount = 0;
@@ -50,21 +54,24 @@ public class MemberMaintenance extends JPanel {
 		JButton test = new JButton(new AbstractAction("Test") {
 			public void actionPerformed(ActionEvent e) {
 				// button to test input functions
-				textFieldArray.get(6).setText(processPhoneNumber("abc456268519191"));
-
+				table.getModel().setValueAt("asdf", 1, 1);
 			}
 		});
 
 		JButton saveMember = new JButton(new AbstractAction("Save Changes") {
 			public void actionPerformed(ActionEvent e) {
 				// save changes function
-				// probably run update sql statement
+				// update exception: string is empty or null
+				// reminder: complete the actual function because right now it only updates first name and last name
 				String id = getTextData(0);
 				String lastname = getTextData(1);
 				String firstname = getTextData(2);
 
 				if (!(id.isEmpty())) {
 					String query = "UPDATE Member SET Last_name = '" + lastname + "', First_name = '" + firstname + "' WHERE ID = " + id;
+					int row = tableIndex.get(Integer.parseInt(id));
+					table.getModel().setValueAt(lastname, row, 1);
+					table.getModel().setValueAt(firstname, row, 2);
 					executeCommand(query);
 				}
 			}
@@ -79,7 +86,7 @@ public class MemberMaintenance extends JPanel {
 
 		JButton deleteMember = new JButton(new AbstractAction("Delete a member") {
 			public void actionPerformed(ActionEvent e) {
-				// toggle frame to delete member functions
+				// delete function funky... it interacts with the table very weirdly
 				// should prompt confirm message and run delete sql statement upon confirm
 				String id = getTextData(0);
 
@@ -91,7 +98,7 @@ public class MemberMaintenance extends JPanel {
 			}
 		});
 
-		printElements();
+		printFormElements();
 		printMemberTable();
 		printButton(test);
 		printButton(saveMember);
@@ -170,7 +177,7 @@ public class MemberMaintenance extends JPanel {
 	 *	9: fax#
 	 */
 
-	private void printElements() {
+	private void printFormElements() {
 		for (JLabel label : labelArray) {
 			printLabel(label);
 		}
@@ -202,42 +209,7 @@ public class MemberMaintenance extends JPanel {
 	}
 
 	private void printMemberTable() {
-		ResultSet rs = null;
-		try {
-			String query = "SELECT * FROM Member ORDER BY Last_name";
-			Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-			rs = stmt.executeQuery(query);
-
-			while (rs.next()) {
-				rsCount++;
-			}
-			rs.first();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		int row = 0;
-		Object[][] data = new Object[rsCount][labelArray.size() + 1];
-		try {
-			while (rs.next()) {
-				int id = rs.getInt("ID");
-				data[row][0] = rs.getString("ID");
-				data[row][1] = rs.getString("Last_name");
-				data[row][2] = rs.getString("First_name");
-				data[row][3] = rs.getString("Address");
-				data[row][4] = rs.getString("City");
-				data[row][5] = rs.getString("State");
-				data[row][6] = rs.getString("Zip");
-				data[row][7] = processPhoneNumber(rs.getString("Home Phone"));
-				data[row][8] = processPhoneNumber(rs.getString("Cell Phone"));
-				data[row][9] = processPhoneNumber(rs.getString("Fax"));
-				data[row][10] = "Load";
-				row++;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
+		getTableData();
 		String[] columnNames = {"ID",
 														"Last Name",
 														"First Name",
@@ -250,13 +222,13 @@ public class MemberMaintenance extends JPanel {
 														"Fax",
 														""};
 
-		DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
+		tableModel = new DefaultTableModel(data, columnNames) {
 			public boolean isCellEditable(int row, int column) {
 				// only need last column to be editable
 				return column == 10;
 			}
 		};
-		JTable table = new JTable();
+		table = new JTable();
 		table.setModel(tableModel);
 		table.setRowHeight(35);
 		table.getColumnModel().getColumn(0).setPreferredWidth(5);
@@ -270,9 +242,9 @@ public class MemberMaintenance extends JPanel {
 				int row = table.getSelectedRow();
 				for (int i = 0; i < labelArray.size(); i++) {
 					if (i == 7 || i == 8 || i == 9) {
-						textFieldArray.get(i).setText(processPhoneNumber((String) table.getModel().getValueAt(row, i)));
+						textFieldArray.get(i).setText(processPhoneNumber(data[row][i]));
 					} else {
-						textFieldArray.get(i).setText((String) table.getModel().getValueAt(row, i));
+						textFieldArray.get(i).setText(data[row][i]);
 					}
 				}
 			}
@@ -310,13 +282,56 @@ public class MemberMaintenance extends JPanel {
 	private void executeCommand(String query) {
 		try {
 			Statement stmt = con.createStatement();
-			int change = stmt.executeUpdate(query);
+			stmt.executeUpdate(query);
 			// log(change + " " + query);
 			stmt.close();
+			// getTableData();
 			printMemberTable();
 		}
 		catch (SQLException e) {
 			System.out.println("*** SQL error encountered ***");
+			e.printStackTrace();
+		}
+	}
+
+	private void getTableData() {
+		tableIndex.clear();
+		ResultSet rs = null;
+		try {
+			String query = "SELECT * FROM Member ORDER BY Last_name";
+			Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			rs = stmt.executeQuery(query);
+
+			while (rs.next()) {
+				rsCount++;
+			}
+			rs.first();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		int row = 0;
+		data = new String[rsCount][labelArray.size() + 1];
+		try {
+			while (rs.next()) {
+				int id = rs.getInt("ID");
+				tableIndex.put(id, row);
+				data[row][0] = rs.getString("ID");
+				data[row][1] = rs.getString("Last_name");
+				data[row][2] = rs.getString("First_name");
+				data[row][3] = rs.getString("Address");
+				data[row][4] = rs.getString("City");
+				data[row][5] = rs.getString("State");
+				data[row][6] = rs.getString("Zip");
+				data[row][7] = processPhoneNumber(rs.getString("Home Phone"));
+				data[row][8] = processPhoneNumber(rs.getString("Cell Phone"));
+				data[row][9] = processPhoneNumber(rs.getString("Fax"));
+				data[row][10] = "Load";
+				row++;
+			}
+			rs.close();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 	////////////////////////////////////////////////////////////////////////////////
