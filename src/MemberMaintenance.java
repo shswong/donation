@@ -54,7 +54,6 @@ public class MemberMaintenance extends JPanel {
 		JButton test = new JButton(new AbstractAction("Test") {
 			public void actionPerformed(ActionEvent e) {
 				// button to test input functions
-				table.getModel().setValueAt("asdf", 1, 1);
 			}
 		});
 
@@ -86,12 +85,13 @@ public class MemberMaintenance extends JPanel {
 
 		JButton deleteMember = new JButton(new AbstractAction("Delete a member") {
 			public void actionPerformed(ActionEvent e) {
-				// delete function funky... it interacts with the table very weirdly
 				// should prompt confirm message and run delete sql statement upon confirm
 				String id = getTextData(0);
 
 				if (!(id.isEmpty())) {
 					String query = "DELETE FROM Member WHERE ID = " + id;
+					int row = tableIndex.get(Integer.parseInt(id));
+					tableModel.removeRow(row);
 					executeCommand(query);
 					initializeTextFields();
 				}
@@ -115,7 +115,7 @@ public class MemberMaintenance extends JPanel {
 		textFieldArray.get(0).requestFocusInWindow();
 	}
 
-	// process phone numbers
+	// process + format phone numbers
 	private String processPhoneNumber(String number) {
 		// null string case
 		if (number == null) { return ""; }
@@ -157,6 +157,7 @@ public class MemberMaintenance extends JPanel {
 		return processedNumber;
 	}
 
+	// returns text within the text fields according to their assigned position
 	private String getTextData(int pos) {
 		return textFieldArray.get(pos).getText();
 	}
@@ -257,7 +258,7 @@ public class MemberMaintenance extends JPanel {
 		add(scrollPane);
 	}
 	////////////////////////////////////////////////////////////////////////////////
-	private void log(String s) {
+	private <E> void log(E s) {
 		System.out.println(s);
 	}
 	////////////////////////////////////////////////////////////////////////////////
@@ -283,10 +284,10 @@ public class MemberMaintenance extends JPanel {
 		try {
 			Statement stmt = con.createStatement();
 			stmt.executeUpdate(query);
-			// log(change + " " + query);
+			// log(query);
 			stmt.close();
-			// getTableData();
-			printMemberTable();
+			getTableData();
+			// printMemberTable();
 		}
 		catch (SQLException e) {
 			System.out.println("*** SQL error encountered ***");
