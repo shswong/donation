@@ -65,9 +65,16 @@ public class MemberMaintenance extends JPanel {
 				String id = getTextData(0);
 				String lastname = getTextData(1);
 				String firstname = getTextData(2);
+				String address = getTextData(3);
+				String city = getTextData(4);
+				String state = getTextData(5);
+				String zip = getTextData(6);
+				String homephone = getTextData(7);
+				String cellphone = getTextData(8);
+				String fax = getTextData(9);
 
 				if (!(id.isEmpty())) {
-					String query = "UPDATE Member SET Last_name = '" + lastname + "', First_name = '" + firstname + "' WHERE ID = " + id;
+					String query = "UPDATE Member SET Last_name = " + dbString(lastname) + ", First_name = " + dbString(firstname) + " WHERE ID = " + id + ";";
 					int row = tableIndex.get(Integer.parseInt(id));
 					table.getModel().setValueAt(lastname, row, 1);
 					table.getModel().setValueAt(firstname, row, 2);
@@ -78,18 +85,30 @@ public class MemberMaintenance extends JPanel {
 
 		JButton addMember = new JButton(new AbstractAction("Add a member") {
 			public void actionPerformed(ActionEvent e) {
-				// toggle frame to add member functions
+				// add member functions
+				String lastname = getTextData(1);
+				String firstname = getTextData(2);
+				String address = getTextData(3);
+				String city = getTextData(4);
+				String state = getTextData(5);
+				String zip = getTextData(6);
+				String homephone = getTextData(7);
+				String cellphone = getTextData(8);
+				String fax = getTextData(9);
+
+				String query = "INSERT INTO Member (Last_name, First_name, Address, City, State, Zip, [Home Phone], [Cell Phone], Fax) VALUES (" + dbString(lastname) + "," + dbString(firstname) + "," + dbString(address) + "," + dbString(city) + "," + dbString(state) + "," + dbString(zip) + "," + dbString(homephone) + "," + dbString(cellphone) + "," + dbString(fax) + ")";
+
 				initializeTextFields();
 			}
 		});
 
 		JButton deleteMember = new JButton(new AbstractAction("Delete a member") {
 			public void actionPerformed(ActionEvent e) {
-				// should prompt confirm message and run delete sql statement upon confirm
+				// reminder: prompt confirm message and run delete sql statement upon confirm
 				String id = getTextData(0);
 
 				if (!(id.isEmpty())) {
-					String query = "DELETE FROM Member WHERE ID = " + id;
+					String query = "DELETE FROM Member WHERE ID = " + id + ";";
 					int row = tableIndex.get(Integer.parseInt(id));
 					tableModel.removeRow(row);
 					executeCommand(query);
@@ -158,8 +177,11 @@ public class MemberMaintenance extends JPanel {
 	}
 
 	// returns text within the text fields according to their assigned position
+	// exception: if field is blank, therefore string is null, return empty string
 	private String getTextData(int pos) {
-		return textFieldArray.get(pos).getText();
+		String s = textFieldArray.get(pos).getText();
+		if (s == null) { return ""; }
+		return s;
 	}
 	////////////////////////////////////////////////////////////////////////////////
 
@@ -295,11 +317,16 @@ public class MemberMaintenance extends JPanel {
 		}
 	}
 
+	// easier than wrapping every variable with single quotes i think
+	private String dbString(String s) {
+		return "'" + s + "'";
+	}
+
 	private void getTableData() {
 		tableIndex.clear();
 		ResultSet rs = null;
 		try {
-			String query = "SELECT * FROM Member ORDER BY Last_name";
+			String query = "SELECT * FROM Member ORDER BY Last_name;";
 			Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 			rs = stmt.executeQuery(query);
 
