@@ -61,7 +61,9 @@ public class MemberMaintenance extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				// save changes function
 				// update exception: string is empty or null
-				// reminder: complete the actual function because right now it only updates first name and last name
+				// reminder: home and cell phone fields need to be exactly 10 digits
+				// reminder: home and cell phone fields cannot be empty string, default to 111 000 0000
+				// reminder: need to redo the processPhoneNumber()
 				String id = getTextData(0);
 				String lastname = getTextData(1);
 				String firstname = getTextData(2);
@@ -74,10 +76,27 @@ public class MemberMaintenance extends JPanel {
 				String fax = getTextData(9);
 
 				if (!(id.isEmpty())) {
-					String query = "UPDATE Member SET Last_name = " + dbString(lastname) + ", First_name = " + dbString(firstname) + " WHERE ID = " + id + ";";
+					String query = "UPDATE Member SET " +
+													"Last_name = " + dbString(lastname) +
+													", First_name = " + dbString(firstname) +
+													", Address = " + dbString(address) +
+													", City = " + dbString(city) +
+													", State = " + dbString(state) +
+													", Zip = " + dbString(zip) +
+													", [Home Phone] = " + dbString(homephone) +
+													", [Cell Phone] = " + dbString(cellphone) +
+													", Fax = " + dbString(fax) +
+													" WHERE ID = " + id + ";";
 					int row = tableIndex.get(Integer.parseInt(id));
 					table.getModel().setValueAt(lastname, row, 1);
 					table.getModel().setValueAt(firstname, row, 2);
+					table.getModel().setValueAt(address, row, 3);
+					table.getModel().setValueAt(city, row, 4);
+					table.getModel().setValueAt(state, row, 5);
+					table.getModel().setValueAt(zip, row, 6);
+					table.getModel().setValueAt(homephone, row, 7);
+					table.getModel().setValueAt(cellphone, row, 8);
+					table.getModel().setValueAt(fax, row, 9);
 					executeCommand(query);
 				}
 			}
@@ -86,6 +105,7 @@ public class MemberMaintenance extends JPanel {
 		JButton addMember = new JButton(new AbstractAction("Add a member") {
 			public void actionPerformed(ActionEvent e) {
 				// add member functions
+				// reminder: add function does not update the member table
 				String lastname = getTextData(1);
 				String firstname = getTextData(2);
 				String address = getTextData(3);
@@ -97,7 +117,8 @@ public class MemberMaintenance extends JPanel {
 				String fax = getTextData(9);
 
 				String query = "INSERT INTO Member (Last_name, First_name, Address, City, State, Zip, [Home Phone], [Cell Phone], Fax) VALUES (" + dbString(lastname) + "," + dbString(firstname) + "," + dbString(address) + "," + dbString(city) + "," + dbString(state) + "," + dbString(zip) + "," + dbString(homephone) + "," + dbString(cellphone) + "," + dbString(fax) + ")";
-
+				// log(query);
+				// executeCommand(query);
 				initializeTextFields();
 			}
 		});
